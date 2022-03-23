@@ -23,9 +23,11 @@ namespace MultiScreener_Media
     /// </summary>
     public partial class MediaWindow : Window
     {
-        public LibVLC _libVLC;
+        public static LibVLC _libVLC;
         public VideoView vlcPlayer;
         public LibVLCSharp.Shared.MediaPlayer _mp;
+        public MainWindow mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+        public PreviewWindow previewWindow = null;
         public MediaWindow()
         {
             InitializeComponent();
@@ -37,36 +39,76 @@ namespace MultiScreener_Media
             {
                 try
                 {
-                    vlcPlayer.MediaPlayer.Stop();
+                    //vlcPlayer.MediaPlayer.Stop();
                     vlcPlayer.MediaPlayer.Media = new Media(_libVLC, filename);
                     vlcPlayer.MediaPlayer.Play();
+                    previewWindow?.syncroniseSource(filename);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Console.WriteLine(e);
                     MessageBox.Show("Could not play media file!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     System.Media.SystemSounds.Exclamation.Play();
                 }
             }
         }
 
-        public void playFile()
+        public void requestPreviewSync()
         {
-            vlcPlayer.MediaPlayer.Stop();
-            vlcPlayer.MediaPlayer.Play();
+            previewWindow = Application.Current.Windows.OfType<PreviewWindow>().FirstOrDefault();
+            previewWindow.ConnectWithScreen();
         }
 
+        public void play()
+        {
+            //vlcPlayer.MediaPlayer.Stop();
+            vlcPlayer.MediaPlayer.Play();
+            previewWindow?.syncroniseStatus(false);
+        }
+
+        public void Pause()
+        {
+            vlcPlayer.MediaPlayer.Pause();
+            previewWindow?.syncroniseStatus(true);
+        }
+
+        public void Restart()
+        {
+            if (isPlaying())
+            {
+                jumpAt(0);
+            }
+            else
+            {
+                vlcPlayer.MediaPlayer.Stop();
+                play();
+            }
+        }
+
+        public long getMediaDuration()
+        {
+            return vlcPlayer.MediaPlayer.Media.Duration;
+        }
 
         public void jumpAt(long timeUs)
         {
             vlcPlayer.MediaPlayer.Time = timeUs;
+            previewWindow?.syncroniseTime(timeUs);
         }
 
         public bool isPlaying()
         {
             return vlcPlayer.MediaPlayer.IsPlaying;
         }
+
+        public bool hasAnyMediaLoaded()
+        {
+            VLCState VLCState = vlcPlayer.MediaPlayer.State;
+            return VLCState != VLCState.NothingSpecial ^ VLCState != VLCState.Opening ^ VLCState != VLCState.Error;
+        }
         private void mediaWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            previewWindow = Application.Current.Windows.OfType<PreviewWindow>().FirstOrDefault();
             Screen targetScreen = (Screen.AllScreens.Count() > 1) ? Screen.AllScreens.ElementAt(1) : Screen.AllScreens.ElementAt(0);
             this.Left = (Screen.AllScreens.Count() > 1) ? Screen.AllScreens.ElementAt(0).Bounds.Width : 0;
             this.Top = 0;
@@ -86,58 +128,67 @@ namespace MultiScreener_Media
             vlcPlayer.MediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
             vlcPlayer.MediaPlayer.Playing += MediaPlayer_Playing;
             vlcPlayer.MediaPlayer.Stopped += MediaPlayer_Stopped;
-            vlcPlayer.MediaPlayer.Paused += MediaPlayer_Paused;            
+            vlcPlayer.MediaPlayer.Paused += MediaPlayer_Paused;
+            vlcPlayer.MediaPlayer.Opening += MediaPlayer_Opening;
+
+            vlcPlayer.MediaPlayer.Mute = Properties.Settings.Default.isMuted;
+            mainWindow.masterVolumeSlider.Value = Properties.Settings.Default.audioLevel;
+        }
+
+        private void MediaPlayer_Opening(object sender, EventArgs e)
+        {
+            mainWindow.Dispatcher.Invoke(new Action(() =>
+            {
+                mainWindow.currentTimeLabel.Content = "00:00";
+            }));
+            vlcPlayer.MediaPlayer.Mute = MainWindow.isMuted;
+            vlcPlayer.MediaPlayer.Volume = MainWindow.volume;
+
         }
 
         private void MediaPlayer_Paused(object sender, EventArgs e)
         {
-            this.Dispatcher.Invoke(() =>
-            {
-                Application.Current.Windows.OfType<MainWindow>().First().
-                playButton.Background = new ImageBrush(MainWindow.getBitmapResource("play.png"));
-            });
+            Dispatcher.Invoke(() => mainWindow.playButton.Background = new ImageBrush(MainWindow.getBitmapResource("play.png")));
+            previewWindow?.syncroniseStatus(true);
         }
 
         private void MediaPlayer_Stopped(object sender, EventArgs e)
         {
-            this.Dispatcher.Invoke(() =>
+            Dispatcher.Invoke(() =>
             {
-                MainWindow window = Application.Current.Windows.OfType<MainWindow>().First();
-
-                window.currentTimeLabel.Content = "00:00";
-                window.timeBar.Value = 0;
-                window.maxDurationLabel.Content = "00:00";
-                window.playButton.Background = new ImageBrush(MainWindow.getBitmapResource("play.png"));
-                window.masterVolumeSlider.IsEnabled = false;
+                previewWindow?.stopMedia();
+                mainWindow.currentTimeLabel.Content = "00:00";
+                mainWindow.timeBar.Value = 0;
+                mainWindow.timeBar.IsEnabled = false;
+                mainWindow.maxDurationLabel.Content = "00:00";
+                mainWindow.playButton.Background = new ImageBrush(MainWindow.getBitmapResource("play.png"));
             });
         }
 
         private void MediaPlayer_Playing(object sender, EventArgs e)
         {
-            this.Dispatcher.Invoke(() =>
+            Dispatcher.Invoke(() =>
             {
-                MainWindow window = Application.Current.Windows.OfType<MainWindow>().First();
-
-                window.currentTimeLabel.Content = "00:00";
-                window.timeBar.Value = 0;
-                window.maxDurationLabel.Content = TimeSpan.FromMilliseconds(vlcPlayer.MediaPlayer.Media.Duration).ToString(@"mm\:ss");
-                window.playButton.Background = new ImageBrush(MainWindow.getBitmapResource("pause.png"));
-                window.masterVolumeSlider.IsEnabled = true;
+                previewWindow?.syncroniseStatus(false);
+                mainWindow.timeBar.Value = 0;
+                mainWindow.timeBar.IsEnabled = true;
+                mainWindow.maxDurationLabel.Content = TimeSpan.FromMilliseconds(vlcPlayer.MediaPlayer.Media.Duration).ToString(@"mm\:ss");
+                mainWindow.playButton.Background = new ImageBrush(MainWindow.getBitmapResource("pause.png"));
             });
         }
 
         private void MediaPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
         {
-            int progress = (int)((e.Time * 100) / vlcPlayer.MediaPlayer.Media.Duration);
-            string currentTime = TimeSpan.FromMilliseconds(e.Time).ToString(@"mm\:ss");
-            this.Dispatcher.Invoke(() =>
+            if (!mainWindow.isTimebarBeingDragged)
             {
-                MainWindow window = Application.Current.Windows.OfType<MainWindow>().First();
-
-                window.timeBar.Value = progress;
-                window.currentTimeLabel.Content = currentTime;
-            });
+                int progress = (int)((e.Time * 100) / vlcPlayer.MediaPlayer.Media.Duration);
+                string currentTime = TimeSpan.FromMilliseconds(e.Time).ToString(@"mm\:ss");
+                Dispatcher.Invoke(() =>
+                {
+                    mainWindow.timeBar.Value = progress;
+                    mainWindow.currentTimeLabel.Content = currentTime;
+                });
+            }
         }
-
     }
 }

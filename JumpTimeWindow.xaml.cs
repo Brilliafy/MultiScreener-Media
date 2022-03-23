@@ -26,8 +26,8 @@ namespace MultiScreener_Media
         }
 
         private void timeTextbox_KeyUp(object sender, KeyEventArgs e)
-        {       
-            if(e.Key == Key.Enter)
+        {
+            if (e.Key == Key.Enter)
             {
                 string[] timeformats = { @"m\:ss", @"mm\:ss", @"h\:mm\:ss" };
                 if (!TimeSpan.TryParseExact(timeTextbox.Text, timeformats, CultureInfo.InvariantCulture, out TimeSpan result))
@@ -36,15 +36,20 @@ namespace MultiScreener_Media
                     return;
                 }
 
-                if (Application.Current.Windows.OfType<MediaWindow>().Count() != 0)
+                jumpAt((long)result.TotalMilliseconds);
+                Close();
+            }
+        }
+
+        public static void jumpAt(long mil)
+        {
+            if (Application.Current.Windows.OfType<MediaWindow>().Any())
+            {
+                MediaWindow mediaWindow = Application.Current.Windows.OfType<MediaWindow>().First();
+                if (mediaWindow.hasAnyMediaLoaded())
                 {
-                    MediaWindow mediaWindow = Application.Current.Windows.OfType<MediaWindow>().First();
-                    if(mediaWindow.isPlaying())
-                    {
-                        mediaWindow.jumpAt((long)result.TotalMilliseconds);
-                    }
+                    mediaWindow.jumpAt(mil);
                 }
-                this.Close();
             }
         }
 
