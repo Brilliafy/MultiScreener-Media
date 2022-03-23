@@ -3,21 +3,243 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:my="clr-namespace:MultiScreener_Media.Properties"
         xmlns:local="clr-namespace:MultiScreener_Media"
         mc:Ignorable="d"
-        Title="Multi-Screener Media" Height="469" Width="300" Icon="Resources/1440792.ico" ResizeMode="NoResize" Loaded="mainWindow_Loaded" Closed="mainWindow_Closed">
+        Title="Multi-Screener Media" Height="525" Width="685" Icon="Resources/1440792.ico" ResizeMode="NoResize" Loaded="mainWindow_Loaded" Closed="mainWindow_Closed">
+
+
+
+    <Window.Resources>
+
+        <Style x:Key="Chubs_SliderStyle" TargetType="Slider">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Maximum" Value="10"/>
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Value" Value="0"/>
+            <Setter Property="Background" Value="#c8c8c8"/>
+            <Setter Property="Foreground" Value="#287dcc"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Background="Transparent">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="MouseOver"/>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <DoubleAnimation Duration="0" To="0.1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="HorizontalTrack"/>
+                                            <DoubleAnimation Duration="0" To="0.1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="VerticalTrack"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Fill" Storyboard.TargetName="HorizontalFill">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Black"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Fill" Storyboard.TargetName="VerticalFill">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Black"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <Grid x:Name="HorizontalTemplate" Margin="0,0,0,0">
+
+                                <!-- **** Change the height of these two rectangles to make the slider smaller -->
+                                <Rectangle x:Name="HorizontalTrack" Fill="#c8c8c8" Height="4" IsHitTestVisible="False" Margin="0,22,0,50"/>
+                                <Rectangle x:Name="HorizontalFill" Fill="#FFABABAB" Height="4" IsHitTestVisible="False" Margin="0,22,0,50">
+                                    <Rectangle.Clip>
+                                        <RectangleGeometry Rect="0, 0, 6, 12"/>
+                                    </Rectangle.Clip>
+                                </Rectangle>
+
+                                <!-- **** this is the white rectangle thing, change the height and width if you want to make it smaller -->
+                                <Rectangle x:Name="HorizontalCenterElement" Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" HorizontalAlignment="Left" Height="12" Margin="0,16,0,44" Width="8">
+                                    <Rectangle.RenderTransform>
+                                        <TranslateTransform/>
+                                    </Rectangle.RenderTransform>
+                                </Rectangle>
+
+
+                            </Grid>
+                            <!--<Grid x:Name="VerticalTemplate" Margin="0">
+                                <Rectangle x:Name="VerticalTrack" Fill="{TemplateBinding Background}" IsHitTestVisible="False" Margin="18,0,18,0" Width="12"/>
+                                <Rectangle x:Name="VerticalFill" Fill="#287dcc" IsHitTestVisible="False" Margin="18,0,18,0" Width="12">
+                                    <Rectangle.Clip>
+                                        <RectangleGeometry Rect="0, 0, 12, 6"/>
+                                    </Rectangle.Clip>
+                                </Rectangle>
+                                <Rectangle x:Name="VerticalCenterElement" Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" Height="12" Margin="12,0,12,0" VerticalAlignment="Top" Width="24">
+                                    <Rectangle.RenderTransform>
+                                        <TranslateTransform/>
+                                    </Rectangle.RenderTransform>
+                                </Rectangle>
+                            </Grid>-->
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ItemcontainerStyle" TargetType="MenuItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate  TargetType="{x:Type MenuItem}">
+                        <Border x:Name="templateRoot" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <Grid Margin="-1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition MinWidth="22" SharedSizeGroup="MenuItemIconColumnGroup" Width="Auto"/>
+                                    <ColumnDefinition Width="13"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition SharedSizeGroup="MenuItemIGTColumnGroup" Width="Auto"/>
+                                    <ColumnDefinition Width="20"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Margin="3" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center" Width="16"/>
+                                <Border x:Name="GlyphPanel" BorderBrush="#FF26A0DA" BorderThickness="1" Background="#3D26A0DA" ClipToBounds="False" HorizontalAlignment="Center" Height="22" Margin="-1,0,0,0" Visibility="Hidden" VerticalAlignment="Center" Width="22">
+                                    <RadioButton x:Name="Glyph" IsChecked="{TemplateBinding IsChecked}" GroupName="a"  VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                </Border>
+                                <ContentPresenter x:Name="menuHeaderContainer" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="2" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="menuGestureText" Grid.Column="4" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{TemplateBinding InputGestureText}" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Icon" Value="{x:Null}">
+                                <Setter Property="Visibility" TargetName="Icon" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger  Property="IsChecked" Value="True">
+                                <Setter Property="Visibility" TargetName="GlyphPanel" Value="Visible"/>
+                                <Setter Property="Visibility" TargetName="Icon" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger SourceName="Glyph"  Property="IsChecked" Value="False">
+                                <Setter Property="Visibility" TargetName="GlyphPanel" Value="Hidden"/>
+                                <Setter Property="Visibility" TargetName="Glyph" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter Property="Background" TargetName="templateRoot" Value="#3D26A0DA"/>
+                                <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FF26A0DA"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="TextElement.Foreground" TargetName="templateRoot" Value="#FF707070"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsHighlighted" Value="True"/>
+                                    <Condition Property="IsEnabled" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background" TargetName="templateRoot" Value="#0A000000"/>
+                                <Setter Property="BorderBrush" TargetName="templateRoot" Value="#21000000"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+        <Style x:Key="SliderRepeatButton" TargetType="RepeatButton">
+            <Setter Property="SnapsToDevicePixels" Value="true" />
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="IsTabStop" Value="false" />
+            <Setter Property="Focusable" Value="false" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border  BorderThickness="1" BorderBrush="Black" Background="#FFD9D9D9" Height="6" CornerRadius="1,1,1,1"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SliderRepeatButton1" TargetType="RepeatButton">
+            <Setter Property="SnapsToDevicePixels" Value="true" />
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border SnapsToDevicePixels="True" Background="#FF287DCC"  BorderThickness="1" BorderBrush="Black" Height="6" CornerRadius="1,1,1,1"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SliderThumb" TargetType="Thumb">
+            <Setter Property="SnapsToDevicePixels" Value="true" />
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ControlTemplate x:Key="Slider"  TargetType="Slider">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto" MinHeight="{TemplateBinding MinHeight}" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Track Grid.Row="1" x:Name="PART_Track"   >
+                    <Track.DecreaseRepeatButton>
+                        <RepeatButton Style="{StaticResource SliderRepeatButton1}"  Command="Slider.DecreaseLarge" />
+                    </Track.DecreaseRepeatButton>
+                    <Track.Thumb>
+                        <Thumb Style="{StaticResource SliderThumb}"  />
+                    </Track.Thumb>
+                    <Track.IncreaseRepeatButton>
+                        <RepeatButton Style="{StaticResource SliderRepeatButton}" Command="Slider.IncreaseLarge" />
+                    </Track.IncreaseRepeatButton>
+                </Track>
+            </Grid>
+        </ControlTemplate>
+
+        <Style x:Key="Horizontal_Slider" TargetType="Slider">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="SnapsToDevicePixels" Value="true" />
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="MinHeight" Value="21" />
+                    <Setter Property="MinWidth" Value="104" />
+                    <Setter Property="Template" Value="{StaticResource Slider}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
     <Grid>
-        <ListBox x:Name="contentsListBox" Height="179" Margin="10,30,10,0" VerticalAlignment="Top" SelectionChanged="contentsListBox_SelectionChanged"/>
-        <Menu x:Name="fileMenu" Height="20" Margin="0" VerticalAlignment="Top">
+        <ListBox x:Name="contentsListBox" Height="320" Margin="10,30,10,0" VerticalAlignment="Top" SelectionChanged="contentsListBox_SelectionChanged" FontSize="18" FontStyle="Italic" Drop="contentsListBox_Drop" AllowDrop="True">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Margin="3" Source="{Binding Path}"/>
+                        <TextBlock Margin="3" Text="{Binding Name}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Menu x:Name="fileMenu" Height="20" Margin="0" VerticalAlignment="Top" FontSize="14">
             <MenuItem Header="File">
                 <MenuItem x:Name="openFolderMenuItem" Header="Open Folder..." Click="openFolderMenuItem_Click"/>
                 <MenuItem x:Name="openFilesMenuItem" Header="Open Files..." Click="openFilesMenuItem_Click"/>
+                <MenuItem x:Name="clearFilesMenuItem" Click="clearFilesMenuItem_Click" Header="Clear File Viewer"/>
+            </MenuItem>
+            <MenuItem x:Name="viewMenu" Header="View" ItemContainerStyle="{StaticResource ItemcontainerStyle}">
+                <MenuItem x:Name="catergoriseFileExtensionItem" IsCheckable="True" Header="Name with File Extension" Checked="catergoriseFileExtension"/>
+                <MenuItem x:Name="categoriseNameItem" IsCheckable="True" Header="Name" Checked="categoriseName"/>
+                <MenuItem x:Name="categoriseFilenameItem" IsCheckable="True" Header="Filename" Checked="categoriseFilename"/>
+                <!--<MenuItem IsCheckable="True" IsEnabled="False" Header="Content"/>-->
+            </MenuItem>
+            <MenuItem Header="Media">
+                <MenuItem Header="Jump at..." Click="jumpButton_Click"/>
+                <MenuItem Header="Open previewer" Click="openPreviewerClick"/>
             </MenuItem>
             <MenuItem Header="About" Click="MenuItem_Click"/>
         </Menu>
-        <Border BorderBrush="Black" BorderThickness="1" Height="68" Margin="10,215,10,0" VerticalAlignment="Top" CornerRadius="5">
+        <Border BorderBrush="Black" BorderThickness="1" Height="128" Margin="10,0,10,2" VerticalAlignment="Bottom" CornerRadius="5">
             <Grid>
-                <Button x:Name="playButton" Content="" Width="64" Height="64" HorizontalAlignment="Left" BorderBrush="{x:Null}" Margin="0,1" Click="playButton_Click">
+                <Button x:Name="playButton" Content="" Width="64" Height="64" HorizontalAlignment="Left" BorderBrush="{x:Null}" Margin="8,0,0,12" Click="playButton_Click" VerticalAlignment="Bottom">
                     <Button.Background>
                         <ImageBrush ImageSource="Resources/play.png"/>
                     </Button.Background>
@@ -42,7 +264,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button x:Name="stopButton" Content="" Width="64" Height="64" HorizontalAlignment="Left" BorderBrush="{x:Null}" Margin="66,1,0,1" Click="stopButton_Click">
+                <Button x:Name="stopButton" Content="" Width="64" Height="64" HorizontalAlignment="Left" BorderBrush="{x:Null}" Margin="80,0,0,10" Click="stopButton_Click" VerticalAlignment="Bottom">
                     <Button.Background>
                         <ImageBrush ImageSource="Resources/stop.png"/>
                     </Button.Background>
@@ -67,7 +289,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button x:Name="toggleMuteButton" Content="" Width="64" Height="64" HorizontalAlignment="Right" BorderBrush="{x:Null}" Margin="0,1" Click="muteButton_Click">
+                <Button x:Name="toggleMuteButton" Content="" Width="64" Height="64" HorizontalAlignment="Right" BorderBrush="{x:Null}" Margin="0,0,262,5" Click="muteButton_Click" VerticalAlignment="Bottom">
                     <Button.Background>
                         <ImageBrush ImageSource="Resources/audio.png"/>
                     </Button.Background>
@@ -92,7 +314,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button x:Name="restartButton" Content="" Width="64" Height="64" HorizontalAlignment="Right" BorderBrush="{x:Null}" Margin="0,1,66,1" Click="restartButton_Click">
+                <Button x:Name="restartButton" Content="" Width="64" Height="64" HorizontalAlignment="Left" BorderBrush="{x:Null}" Margin="160,0,0,10" Click="restartButton_Click" VerticalAlignment="Bottom">
                     <Button.Background>
                         <ImageBrush ImageSource="Resources/restartIcon.png"/>
                     </Button.Background>
@@ -117,18 +339,76 @@
                         </Style>
                     </Button.Style>
                 </Button>
+                <Slider x:Name="masterVolumeSlider" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="245" Maximum="100" SmallChange="1" LargeChange="5" Value="100" ValueChanged="masterVolumeSlider_ValueChanged" Height="50" Background="#FF22EC41" Margin="0,0,12,12">
+                    <Slider.Resources>
+                        <Style TargetType="{x:Type Slider}">
+                            <Setter Property="Background" Value="Gray"/>
+                            <Setter Property="Height" Value="20"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type Slider}">
+                                        <ControlTemplate.Resources>
+                                            <Style TargetType="{x:Type RepeatButton}">
+                                                <Setter Property="OverridesDefaultStyle" Value="true"/>
+                                                <Setter Property="IsTabStop" Value="false"/>
+                                                <Setter Property="Focusable" Value="false"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                                            <Border Background="{TemplateBinding Background}"/>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                            <PathGeometry x:Key="Triangle" RenderOptions.EdgeMode="Aliased" RenderOptions.BitmapScalingMode="Fant" Figures="M0,1 L1,1 L1,0 L0,1"/>
+                                        </ControlTemplate.Resources>
+                                        <Grid>
+                                            <Grid>
+                                                <Grid.OpacityMask>
+                                                    <DrawingBrush>
+                                                        <DrawingBrush.Drawing>
+                                                            <GeometryDrawing Brush="Black" RenderOptions.EdgeMode="Aliased" RenderOptions.BitmapScalingMode="Fant" Geometry="{StaticResource Triangle}"/>
+                                                        </DrawingBrush.Drawing>
+                                                    </DrawingBrush>
+                                                </Grid.OpacityMask>
+                                                <Track x:Name="PART_Track" Value="{TemplateBinding Value}">
+                                                    <Track.Thumb>
+                                                        <Thumb Width="10" Background="{TemplateBinding Background}">
+                                                            <Thumb.Template>
+                                                                <ControlTemplate TargetType="{x:Type Thumb}">
+                                                                    <Border Background="{TemplateBinding Background}"/>
+                                                                </ControlTemplate>
+                                                            </Thumb.Template>
+                                                        </Thumb>
+                                                    </Track.Thumb>
+                                                    <Track.DecreaseRepeatButton>
+                                                        <RepeatButton Background="{TemplateBinding Background}" Command="Slider.DecreaseLarge" Delay="140"/>
+                                                    </Track.DecreaseRepeatButton>
+                                                    <Track.IncreaseRepeatButton>
+                                                        <RepeatButton Background="Transparent" Command="Slider.IncreaseLarge" Delay="140"/>
+                                                    </Track.IncreaseRepeatButton>
+                                                </Track>
+                                            </Grid>
+                                            <Path
+                        Data="{StaticResource Triangle}"
+                        Stretch="Fill"
+                        Stroke="Black"
+                        StrokeThickness="1"/>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+
+
+                    </Slider.Resources>
+                </Slider>
+                <Slider x:Name="timeBar" Style="{DynamicResource Horizontal_Slider}" Margin="16,8,16,0" VerticalAlignment="Top" Maximum="100" IsMoveToPointEnabled="True" IsEnabled="False" ValueChanged="timeBar_ValueChanged"/>
+                <Label x:Name="maxDurationLabel" Content="00:00" HorizontalAlignment="Right" Margin="0,18,10,0" VerticalAlignment="Top" RenderTransformOrigin="-0.543,0.675" FontSize="16" FontWeight="Normal"/>
+                <Label x:Name="currentTimeLabel" Content="00:00" HorizontalAlignment="Left" Margin="10,17,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.543,0.675" FontSize="16" FontWeight="Normal" FontStyle="Normal"/>
+                <Label x:Name="volumeLabel" Content="100%" HorizontalAlignment="Right" Margin="0,0,157,28" VerticalAlignment="Bottom" FontSize="16" FontStyle="Normal" FontWeight="Normal" Foreground="#FF5D5D5D"/>
             </Grid>
         </Border>
-        <Border BorderBrush="Black" BorderThickness="1" Height="32" Margin="10,290,10,0" VerticalAlignment="Top" CornerRadius="5">
-            <Grid>
-                <Label Content="Volume:" HorizontalAlignment="Left" Margin="0,-2,0,2" VerticalAlignment="Center" FontSize="16"/>
-                <Slider x:Name="masterVolumeSlider" HorizontalAlignment="Right" Margin="0,6,10,6" VerticalAlignment="Center" Width="195" Maximum="100" SmallChange="1" LargeChange="5" Value="101" ValueChanged="masterVolumeSlider_ValueChanged" IsEnabled="False"/>
-            </Grid>
-        </Border>
-        <ProgressBar x:Name="timeBar" Height="17" Margin="10,0,10,10" VerticalAlignment="Bottom" SmallChange="0"/>
-        <Label x:Name="currentTimeLabel" Content="00:00" HorizontalAlignment="Left" Margin="5,0,0,23" VerticalAlignment="Bottom" RenderTransformOrigin="-0.543,0.675" FontSize="14"/>
-        <Label x:Name="maxDurationLabel" Content="00:00" HorizontalAlignment="Right" Margin="0,0,5,23" VerticalAlignment="Bottom" RenderTransformOrigin="-0.543,0.675" FontSize="14"/>
-        <Button x:Name="jumpButton" Content="Jump at..." Margin="10,0,10,52" VerticalAlignment="Bottom" Height="44" Click="jumpButton_Click"/>
 
     </Grid>
 </Window>

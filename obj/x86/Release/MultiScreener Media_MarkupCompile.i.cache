@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-H:\Workplace\VS\.NetFramework C#\MultiScreenerMedia\Project\MultiScreener Media\obj\x86\Release\
+D:\Workplace\VS\.NetFramework C#\MultiScreenerMedia\Project\MultiScreener-Media\obj\x86\Release\
 MultiScreener_Media
 none
 false
 TRACE
-H:\Workplace\VS\.NetFramework C#\MultiScreenerMedia\Project\MultiScreener Media\App.xaml
-41826703820
+D:\Workplace\VS\.NetFramework C#\MultiScreenerMedia\Project\MultiScreener-Media\App.xaml
+51226894305
 
-101021035585
-851085999125
-AboutWindow.xaml;JumpTimeWindow.xaml;MainWindow.xaml;MediaWindow.xaml;
+14-1486641148
+80469299600
+AboutWindow.xaml;JumpTimeWindow.xaml;MainWindow.xaml;MediaWindow.xaml;PreviewWindow.xaml;
 
 False
 

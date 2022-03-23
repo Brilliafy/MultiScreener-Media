@@ -7,7 +7,7 @@
         x:Name="mediaWindow" x:Class="MultiScreener_Media.MediaWindow"
         mc:Ignorable="d"
         Title="MediaWindow" Height="450" Width="800" WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" Loaded="mediaWindow_Loaded">
-    <Grid>
+    <Grid Background="Black">
         <WindowsFormsHost x:Name="windowsForms"/>
     </Grid>
 </Window>
